@@ -1,0 +1,64 @@
+name: Otomatik X (Twitter) Postu
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # Şimdilik saatte bir (Siz 12 saate çevirebilirsiniz)
+  workflow_dispatch:
+
+jobs:
+  tweet-automation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Depoyu İndir (Dizin sorununu çözer)
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: . 
+
+      # 2. Node.js Kurulumu
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Bağımlılıkları kur
+      - name: Install Dependencies
+        working-directory: ${{ github.workspace }}
+        run: npm install
+
+      # 4. X API keylerini ve GEMINI keyi ayarla
+      - name: Set Environment Variables from Secrets
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
+          echo "X_APP_KEY=${{ secrets.X_APP_KEY }}" >> $GITHUB_ENV
+          echo "X_APP_SECRET=${{ secrets.X_APP_SECRET }}" >> $GITHUB_ENV
+          echo "X_ACCESS_TOKEN=${{ secrets.X_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "X_ACCESS_SECRET=${{ secrets.X_ACCESS_SECRET }}" >> $GITHUB_ENV
+
+      # 5. Botu çalıştır
+      - name: Run Auto Tweet Bot
+        working-directory: ${{ github.workspace }}
+        run: node src/index.js
+
+      # 6. Değişiklikleri Git'e Kaydet ve GitHub'a Push Et (YENİ EKLEME)
+      - name: Commit and Push Changes
+        working-directory: ${{ github.workspace }}
+        run: |
+          # Git kimlik bilgilerini ayarla (Oturum açma gibi düşünün)
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          
+          # output klasöründeki tüm değişiklikleri (silme dahil) Git'e ekle
+          git add output
+          
+          # Değişiklik yapılıp yapılmadığını kontrol et ve sadece varsa commit et
+          if git status --porcelain | grep output; then
+            # Commit mesajını oluştur
+            git commit -m "chore(output): İşlenen görsel silindi, otomatik push."
+            # Değişiklikleri GitHub'a push et
+            git push origin main
+          else
+            echo "Output klasöründe yeni değişiklik bulunamadı, push atlanıyor."
+          fi
