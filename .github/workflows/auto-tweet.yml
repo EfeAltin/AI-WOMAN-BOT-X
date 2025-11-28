@@ -2,19 +2,19 @@ name: Otomatik X (Twitter) Postu
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Şimdilik saatte bir (Siz 12 saate çevirebilirsiniz)
+    - cron: '*/10 * * * *' # 10 dakikada bir çalışacak
   workflow_dispatch:
 
 jobs:
   tweet-automation:
     runs-on: ubuntu-latest
-    
+
     steps:
-      # 1. Depoyu İndir (Dizin sorununu çözer)
+      # 1. Depoyu İndir
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          path: . 
+          path: .
 
       # 2. Node.js Kurulumu
       - name: Set up Node.js
@@ -42,23 +42,19 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: node src/index.js
 
-      # 6. Değişiklikleri Git'e Kaydet ve GitHub'a Push Et (YENİ EKLEME)
+      # 6. Değişiklikleri Git'e Kaydet ve GitHub'a Push Et (GITHUB_TOKEN ile)
       - name: Commit and Push Changes
         working-directory: ${{ github.workspace }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Git kimlik bilgilerini ayarla (Oturum açma gibi düşünün)
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          
-          # output klasöründeki tüm değişiklikleri (silme dahil) Git'e ekle
+
           git add output
-          
-          # Değişiklik yapılıp yapılmadığını kontrol et ve sadece varsa commit et
+
           if git status --porcelain | grep output; then
-            # Commit mesajını oluştur
             git commit -m "chore(output): İşlenen görsel silindi, otomatik push."
-            # Değişiklikleri GitHub'a push et
-            git push origin main
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
           else
             echo "Output klasöründe yeni değişiklik bulunamadı, push atlanıyor."
-          fi
