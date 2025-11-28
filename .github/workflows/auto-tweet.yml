@@ -58,3 +58,4 @@ jobs:
             git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
           else
             echo "Output klasöründe yeni değişiklik bulunamadı, push atlanıyor."
+            fi
