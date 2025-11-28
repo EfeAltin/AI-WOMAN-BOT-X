@@ -2,7 +2,7 @@ name: Otomatik X (Twitter) Postu
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Şimdilik saatte bir (Siz 12 saate çevirebilirsiniz)
+    - cron: '*/10 * * * *' # Şimdilik saatte bir (Siz 12 saate çevirebilirsiniz)
   workflow_dispatch:
 
 jobs:
