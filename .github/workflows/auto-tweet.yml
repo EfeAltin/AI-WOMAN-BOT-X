@@ -1,5 +1,9 @@
 name: Otomatik X (Twitter) Postu
 
+# Workflow izinlerini ekliyoruz, contents write gerekli
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: '*/10 * * * *' # 10 dakikada bir çalışacak
@@ -15,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: .
+          persist-credentials: false # Önemli: kendi push komutumuzu kullanabilmek için
 
       # 2. Node.js Kurulumu
       - name: Set up Node.js
@@ -55,7 +60,7 @@ jobs:
 
           if git status --porcelain | grep output; then
             git commit -m "chore(output): İşlenen görsel silindi, otomatik push."
-            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:main
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
           else
             echo "Output klasöründe yeni değişiklik bulunamadı, push atlanıyor."
-            fi
+          fi
